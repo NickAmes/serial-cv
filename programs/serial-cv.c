@@ -47,7 +47,7 @@ int serialcv_init(const char *path, float Vref){
 		serialfd = -1;
 		return -1;
 	}
-	cfsetospeed(&options, 9600);
+	cfsetospeed(&options, B9600);
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CS8;
 	options.c_cflag &= ~PARENB;
@@ -62,17 +62,6 @@ int serialcv_init(const char *path, float Vref){
 		serialfd = -1;
 		return -1;
 	}
-	/* For some reason the AVR ignores the first byte sent to it.
-	 * This "primes the pump" so the user's requests take effect. */
-	if((r = write(serialfd, "\0\0", 2)) != 2){
-		if(0 == r){
-			fputs("serialcv_init: an unknown error occured while"
-			      " writing to the serial port\n", stderr);
-			return -1;
-		} else {
-			perror("serialcv_init");
-		}
-	}
 	return 0;
 }
 
@@ -82,38 +71,41 @@ int serialcv_init(const char *path, float Vref){
  * allowing it to be overridden by another controller.
  * Returns 0 on success, -1 on error. */
 int serialcv_voltage(float voltage){
-	char high, low; /* high and low output bytes */
-	int fraction; /* Voltage fraction: 0 - 4095 */
+	char first, second; /* high and low output bytes */
+	unsigned int fraction; /* Voltage fraction: 0 - 4095 */
 	int r; /* Return value of write() */
 	if(-1 == serialfd){
 		fputs("serialcv_voltage: error: not initalized\n", stderr);
 		return -1;
 	}
-	/* Control byte layout:
-	 * (V = voltage word, S = shutdown bit, X = don't care
-	 *     1st byte            2nd byte
-	 * MSB           LSB   MSB           LSB
-	 *  0 V V V V V V V     1 S X V V V V V  */
+	/* Each command consists of two bytes, containing the desired voltage word and
+	 * a shutdown bit. If the shutdown bit is 1, the voltage word is ignored, and
+	 * the DAC is put into a high-Z mode. When shutdown, the DAC can be overridden
+	 * by another controller.
+	 * Command Format (V# = voltage word bit, S = shutdown bit, X = don't care):
+	 *        1st byte                 2nd byte
+	 * MSB                    LSB     MSB                LSB
+	 *  V11 V10 V9 V8 V7 V6 V5 1       X S V4 V3 V2 V1 V0 0              */
 	if(voltage >= 0){
 		if(voltage > vref)voltage = vref;
 		fraction = (voltage * 4096)/vref;
-		high = 0x7F & (fraction >> 5);
-		low = 0x80 | (fraction & 0x1F);
+		first = 0x01 | (fraction >> 4);
+		second = 0x3E | (fraction << 1);
 	} else {
 		/* Shutdown the DAC. */
-		high = 0;
-		low = 0xC0;
+		first = 0x01;
+		second = 0x40;
 	}
-	if((r = write(serialfd, &high, 1)) != 1){
+	if((r = write(serialfd, &first, 1)) != 1){
 		if(0 == r){
 			fputs("serialcv_voltage: an unknown error occured while"
-			      " writing to the serial port\n", stderr);
+			" writing to the serial port\n", stderr);
 			return -1;
 		} else {
 			perror("serialcv_voltage");
 		}
 	}
-	if((r = write(serialfd, &low, 1)) != 1){
+	if((r = write(serialfd, &second, 1)) != 1){
 		if(0 == r){
 			fputs("serialcv_voltage: an unknown error occured while"
 			      " writing to the serial port\n", stderr);
