@@ -20,6 +20,8 @@ int serialcv_init(const char *path, float Vref);
 
 /* Set the output voltage.
  * voltage is the desired output voltage, in volts.
+ * If voltage is negative, the device will shutdown the DAC,
+ * allowing it to be overridden by another controller.
  * Returns 0 on success, -1 on error. */
 int serialcv_voltage(float voltage);
 
