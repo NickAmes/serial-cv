@@ -78,6 +78,8 @@ int serialcv_init(const char *path, float Vref){
 
 /* Set the output voltage.
  * voltage is the desired output voltage, in volts.
+ * If voltage is negative, the device will shutdown the DAC,
+ * allowing it to be overridden by another controller.
  * Returns 0 on success, -1 on error. */
 int serialcv_voltage(float voltage){
 	char high, low; /* high and low output bytes */
@@ -87,11 +89,21 @@ int serialcv_voltage(float voltage){
 		fputs("serialcv_voltage: error: not initalized\n", stderr);
 		return -1;
 	}
-	if(voltage < 0)voltage = 0;
-	if(voltage > vref)voltage = vref;
-	fraction = (voltage * 4096)/vref;
-	high = 0x80 | (fraction >> 5);
-	low = fraction & 0x1F;
+	/* Control byte layout:
+	 * (V = voltage word, S = shutdown bit, X = don't care
+	 *     1st byte            2nd byte
+	 * MSB           LSB   MSB           LSB
+	 *  0 V V V V V V V     1 S X V V V V V  */
+	if(voltage >= 0){
+		if(voltage > vref)voltage = vref;
+		fraction = (voltage * 4096)/vref;
+		high = 0x7F & (fraction >> 5);
+		low = 0x80 | (fraction & 0x1F);
+	} else {
+		/* Shutdown the DAC. */
+		high = 0;
+		low = 0xC0;
+	}
 	if((r = write(serialfd, &high, 1)) != 1){
 		if(0 == r){
 			fputs("serialcv_voltage: an unknown error occured while"

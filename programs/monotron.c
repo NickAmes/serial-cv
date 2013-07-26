@@ -38,7 +38,7 @@ int gotsignal = 0;
 /* Output voltage of the highest note that the synthesizer can produce. */
 #define HIGH_VOLTS 4.29
 /* Output voltage when no note is being played. */
-#define IDLE_VOLTS 1.2
+#define IDLE_VOLTS -1
 
 /* Return the required voltage for a MIDI note number.
  * If the note number is negative, IDLE_VOLTS will be returned.
