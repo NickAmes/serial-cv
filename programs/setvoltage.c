@@ -1,6 +1,7 @@
 /* setvoltage.c - Send a voltage to a serial-cv converter board.
- * Written in 2012 by Nick Ames (nick@fetchmodus.org). Placed in the
- * Public Domain. */
+ * http://www.fetchmodus.org/projects/serialcv/
+ * Written in 2013 by Nick Ames <nick@fetchmodus.org>.
+ * Placed in the Public Domain. */
 #include <stdio.h>
 #include <stdlib.h>
 #include "serial-cv.h"

@@ -1,5 +1,6 @@
 /* monotron.c - Receives MIDI events and uses them to control a Korg Monotron.
- * Written in 2012 by Nick Ames (nick@fetchmodus.org).
+ * http://www.fetchmodus.org/projects/serialcv/
+ * Written in 2013 by Nick Ames <nick@fetchmodus.org>.
  * Placed in the Public Domain. */
 #include <stdio.h>
 #include <stdlib.h>
