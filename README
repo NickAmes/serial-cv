@@ -1,0 +1,15 @@
+This folder contains software for the serial-cv converter board
+(http://www.fetchmodus.org/projects/serialcv/).
+
+The 'firmware' folder contains the firmware for the device itself.
+To compile, you'll need the avr-gcc toolchain. Adjust the Makefile for your
+programmer (usbtinyisp by default) and run make.
+
+The 'programs' folder contains a simple library for controlling the
+serial-cv board from a computer program (serial-cv.c/.h), a utility to
+set the output voltage from a command line (setvoltage.c) and a program
+drive a synthesizer's pitch CV from MIDI events (monotron.c).
+The serial-cv library and the setvoltage utility should compile on any
+POSIX-compliant system (such as GNU/Linux). The monotron program
+requires the ALSA Sequencer and libasound, so it will only work
+on Linux. Run make to build.
