@@ -6,12 +6,12 @@ OBJCOPY:=avr-objcopy
 AVRDUDE:=avrdude
 CFLAGS:= -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wextra -Wall -Wstrict-prototypes -std=gnu99
 LIBS:=
-MCU:= attiny45
+MCU:= attiny25
 
 #Fuse Settings
-LFUSE:=0x62
-HFUSE:=0xDE
-EFUSE:=0xFE
+LFUSE:=0xE2
+HFUSE:=0xDC
+EFUSE:=0xFF
 
 # Source filename, without extension
 FILE:=serialcv_firmware
