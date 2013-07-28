@@ -33,7 +33,7 @@ $(FILE).bin: $(FILE).c
 
 # Download firmware, without changing fuses or eeprom.
 download:
-	@$(AVRDUDE) -qq -p $(MCU) -c $(PROGRAMMER) -P $(PROGRAMMER_PORT) -U flash:w:$(FILE).bin:r
+	@$(AVRDUDE) -p $(MCU) -c $(PROGRAMMER) -P $(PROGRAMMER_PORT) -U flash:w:$(FILE).bin:r
 
 #Delete generated files
 clean:
