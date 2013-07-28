@@ -40,8 +40,6 @@ uint8_t get_byte(void);
 int main(void){
 	/* Setup pins. */
 	PORTB = 1 & ~_BV(PB0) & ~_BV(PB2);
-	DDRB |= _BV(PB4);
-	PORTB &= ~_BV(PB4);
 	/* Setup timer and interrupts for RS-232 */
 	GIMSK |= _BV(PCIE); /* Enable Pin Change Interrupt. */
 	PCMSK =  _BV(PCINT3); /* Enable PCINT3. */
