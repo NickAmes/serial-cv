@@ -90,7 +90,7 @@ int serialcv_voltage(float voltage){
 		if(voltage > vref)voltage = vref;
 		fraction = (voltage * 4096)/vref;
 		first = 0x01 | (fraction >> 4);
-		second = 0x3E | (fraction << 1);
+		second = 0x3E & (fraction << 1);
 	} else {
 		/* Shutdown the DAC. */
 		first = 0x01;
