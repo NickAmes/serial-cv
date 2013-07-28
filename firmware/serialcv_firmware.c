@@ -40,16 +40,40 @@ uint8_t get_byte(void);
 int main(void){
 	/* Setup pins. */
 	PORTB = 1 & ~_BV(PB0) & ~_BV(PB2);
+	DDRB |= _BV(PB4);
+	PORTB &= ~_BV(PB4);
 	/* Setup timer and interrupts for RS-232 */
-	
+	GIMSK |= _BV(PCIE); /* Enable Pin Change Interrupt. */
+	PCMSK =  _BV(PCINT3); /* Enable PCINT3. */
+	GTCCR |= _BV(TSM) | _BV(PSR0); /* Stop timer 0. */
+	TCNT0 = 0; /* Reset timer 0. */
+	TCCR0B |= _BV(CS01); /* Set timer 0 clock to 1Mhz (system clock/8). */
+	TIMSK |= _BV(OCIE0A); /* Enable timer interrupts. */
+	sei(); /* Enable interrupts. */
 
+	uint8_t first, second;
+	uint16_t dac_word;
+	shutdown_dac();
+	first = get_byte();
 	while(1){
-		voltage(2048);
-		_delay_ms(2000);
-		shutdown_dac();
-		_delay_ms(2000);
+		if(first & 0x01){
+			second = get_byte();
+			if(second & 0x01){
+				first = second;
+				continue;
+			} else {
+				if(second & 0x40){
+					shutdown_dac();
+				} else {
+					dac_word = (second & 0x3E) >> 1;
+					dac_word |= (first & 0xFE) << 4;
+					voltage(dac_word);
+				}
+			}
+		}
+		first = get_byte();
 	}
-	
+
 	return 0;
 }
 
@@ -112,6 +136,60 @@ void shutdown_dac(void){
 	send_cmd(0x30, 0);
 }
 
+/* Received byte. */
+volatile uint8_t rs232_byte;
+
+/* If 1, a new byte has been received. */
+volatile uint8_t rs232_byte_ready;
+
 /* Receive a byte over the RS-232 connection.
  * Blocks until a byte has been received. */
-uint8_t get_byte(void);
+uint8_t get_byte(void){
+	while(!rs232_byte_ready){
+		/* Wait for a new byte to arrive. */
+	}
+	rs232_byte_ready = 0;
+	return rs232_byte;
+}
+
+/* Buffer for received byte. */
+volatile uint8_t rs232_buffer;
+
+/* Bit (0-7) currently being received. */
+volatile uint8_t rs232_bit;
+
+/* Adjust the bit periods (or calibrate the RC oscillator) to get good reception.
+ * These period are for a clock frequency of 8.07 Mhz.
+ * The CLKOUT fuse bit is helpful in determining your AVR's clock. */
+
+/* Time between bit samples, in uS.  */
+#define rs232_period 96
+
+/* 1.5 * rs232_period. */
+#define rs232_period_and_half 146
+
+ISR(PCINT0_vect){
+	if(!(PINB & _BV(PB3))){ /* Falling edge */
+		OCR0A = rs232_period_and_half;
+		GTCCR = 0; /* Start timer 0. */
+		GIMSK &= ~_BV(PCIE); /* Disable PCINT. */
+	}
+}
+
+ISR(TIM0_COMPA_vect){
+	rs232_buffer |= (((PINB & _BV(PB3)) != 0)) << rs232_bit;
+	GTCCR |= _BV(TSM) | _BV(PSR0); /* Stop timer 0. */
+	TCNT0 = 0; /* Reset timer 0. */
+	GTCCR = 0; /* Start timer 0. */
+	OCR0A = rs232_period;
+	rs232_bit++;
+	if(9 == rs232_bit){
+		rs232_byte = rs232_buffer;
+		rs232_byte_ready = 1;
+		rs232_buffer = 0;
+		rs232_bit = 0;
+		GTCCR |= _BV(TSM) | _BV(PSR0); /* Stop timer 0. */
+		TCNT0 = 0; /* Reset timer 0. */
+		GIMSK |= _BV(PCIE); /* Enable PCINT. */
+	}
+}
