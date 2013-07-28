@@ -19,9 +19,8 @@ FILE:=serialcv_firmware
 
 .PHONY: clean fuses download
 
-# By default, compile and download.
-# TODO: Add fuses
-all: $(FILE).bin download
+# By default, burn fuses, compile, and download.
+all: fuses $(FILE).bin download
 
 # Burn fuses
 fuses:
