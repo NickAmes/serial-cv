@@ -23,7 +23,6 @@ int main(int argc, char *argv[]){
 		return -2;
 	}
 	voltage = atof(argv[2]);
-	if(voltage < 0)voltage = 0;
 	if(voltage > VREF)voltage = VREF;
 	serialcv_voltage(voltage);
 	serialcv_shutdown();
