@@ -22,6 +22,8 @@ int gotsignal = 0;
 #define VREF 5.0
 /* MIDI channel to listen on (0-15) */
 #define MIDI_CH 0
+/* Name of port in ALSA seq interface. */
+#define SEQ_NAME "Korg Monotron"
 
 /* This program assumes that the synthesizer uses an exponential control
  * voltage (resulting in a *linear* relationship
@@ -37,7 +39,9 @@ int gotsignal = 0;
 #define HIGH_MIDI 72
 /* Output voltage of the highest note that the synthesizer can produce. */
 #define HIGH_VOLTS 4.29
-/* Output voltage when no note is being played. */
+/* Output voltage when no note is being played.
+ * A negative voltage puts the DAC into a high-impedance state, which
+ * allows other control sources to override it. */
 #define IDLE_VOLTS -1
 
 /* Return the required voltage for a MIDI note number.
@@ -214,7 +218,7 @@ int alsa_init(snd_seq_t **seqhandle){
 	if(snd_seq_open(seqhandle, "default", SND_SEQ_OPEN_INPUT, 0)){
 		return -1;
 	}
-	snd_seq_set_client_name(*seqhandle, "Korg Monotron");
+	snd_seq_set_client_name(*seqhandle, SEQ_NAME);
 	if(snd_seq_create_simple_port(*seqhandle, "Input",
 	              SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
 	              SND_SEQ_PORT_TYPE_APPLICATION)){
