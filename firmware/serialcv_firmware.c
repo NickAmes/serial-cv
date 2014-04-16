@@ -103,7 +103,7 @@ void send_byte(uint8_t byte){
 	SCL_L;
 }
 
-/* Send a two-byte command to the DAC, with the R/W bit set to read. */
+/* Send a two-byte command to the DAC, with the R/W bit set to write. */
 void send_cmd(uint8_t first, uint8_t second){
 	SCL_H;
 	_delay_us(I2C_DELAY);
