@@ -9,20 +9,20 @@ Files
 =====
 The 'firmware' folder contains the firmware for the device itself.
 To compile, you'll need the avr-gcc toolchain. Adjust the Makefile for your
-programmer (usbtinyisp by default) and run make.
+programmer and run make.
 
 The 'programs' folder contains a simple library for controlling the
 serial-cv board from a computer program (serial-cv.c), a utility to
 set the output voltage from a command line (setvoltage.c) and a program
-drive a synthesizer's pitch CV from MIDI events (monotron.c).
+to control a synthesizer's pitch CV from MIDI events (monotron.c).
 The serial-cv library and the setvoltage utility should compile on any
-POSIX-compliant system (such as GNU/Linux). The monotron program
+POSIX-compliant system (such as GNU/Linux). The monotron.c program
 requires the ALSA Sequencer and libasound, so it will only work
 on Linux. Run make to build.
 
 Author and License
 ==================
-This software was written by Nick Ames in 2013.
+This software was written by Nick Ames (nick@fetchmodus.org) in 2013.
 It is placed in the public domain, in the hope that it will be useful to
 someone.
 
