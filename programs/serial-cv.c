@@ -30,7 +30,6 @@ static int vref = 5;
  * Returns 0 on success, -1 on error. */
 int serialcv_init(const char *path, float Vref){
 	struct termios options; /* Serial port options */
-	int r; /* Return value of write() */
 	if(Vref < 0)Vref = 0;
 	vref = Vref;
 	serialfd = open(path, O_RDWR | O_NOCTTY | O_NDELAY);
